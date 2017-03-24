@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.DirectoryServices;
+using System.DirectoryServices.AccountManagement;
 using System.Collections;
 
 namespace WorkWithAD
@@ -13,16 +14,25 @@ namespace WorkWithAD
         static void Main(string[] args)
         {
             AD ad = new AD();
-            var result = ad.searchUser("admin");
-            if(result == null)
+            var vs = ad.searchUser("arhon");
+            if(vs)
             {
-                Console.WriteLine("Result is null");
+                Console.WriteLine("User is found");
             }
-            else
+            using (PrincipalContext ctx = new PrincipalContext(ContextType.Machine))
             {
-                Console.WriteLine(result.ToString());
+                string username = "ARHON2";
+                UserPrincipal user = UserPrincipal.FindByIdentity(ctx, username);
+                if (user == null)
+                {
+                    Console.WriteLine("User {0} not found", username);
+                }
+                else
+                {
+                    Console.WriteLine("User {0} has found", user.Name);
+                }
             }
-            Console.Read();
+                Console.Read();
         }
     }
     //ActiveDirectory
@@ -41,24 +51,21 @@ namespace WorkWithAD
         {
             this.CurrentDomain = new DirectoryEntry();
         }
-        public object searchUser (string ADUsername, string ADGroup = "SAMAccountName")
+        public bool searchUser(string ADUsername, string ADGroup = "SAMAccountName")
         {
             try
             {
-                SearchResult result;
-                using (DirectorySearcher searcher = new DirectorySearcher(CurrentDomain))
+                using (PrincipalContext contex = new PrincipalContext(ContextType.Domain))
                 {
-                    searcher.Filter = String.Format("({0}={1})", ADGroup, ADUsername);
-                    searcher.PropertiesToLoad.Add("cn");
-                    result = searcher.FindOne();
+                    UserPrincipal user = UserPrincipal.FindByIdentity(contex, ADUsername);
+                    return true;
                 }
-                return result;
             }
             catch(Exception e)
             {
                 Console.WriteLine(e.Message);
             }
-            return null;
+            return false;
         }
         ~AD()
         {
