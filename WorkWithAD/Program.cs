@@ -30,16 +30,24 @@ namespace WorkWithAD
         {
             this.CurrentDomain = new DirectoryEntry();
         }
-        public object searchUser (string ADUsername,string ADGroup)
+        public object searchUser (string ADUsername, string ADGroup = "SAMAccountName")
         {
-            SearchResult result;
-            using (DirectorySearcher searcher = new DirectorySearcher(CurrentDomain))
+            try
             {
-                searcher.Filter = String.Format("({0}={1})", ADGroup, ADUsername);
-                searcher.PropertiesToLoad.Add("cn");
-                result = searcher.FindOne();
+                SearchResult result;
+                using (DirectorySearcher searcher = new DirectorySearcher(CurrentDomain))
+                {
+                    searcher.Filter = String.Format("({0}={1})", ADGroup, ADUsername);
+                    searcher.PropertiesToLoad.Add("cn");
+                    result = searcher.FindOne();
+                }
+                return result;
             }
-            return result;
+            catch(Exception e)
+            {
+                Console.WriteLine(e.Message);
+            }
+            return 0;
         }
         ~AD()
         {
