@@ -14,50 +14,54 @@ namespace WorkWithAD
         static void Main(string[] args)
         {
             AD ad = new AD();
-            var vs = ad.searchUser("arhon");
-            if(vs)
-            {
-                Console.WriteLine("User is found");
-            }
-            using (PrincipalContext ctx = new PrincipalContext(ContextType.Machine))
-            {
-                string username = "ARHON2";
-                UserPrincipal user = UserPrincipal.FindByIdentity(ctx, username);
-                if (user == null)
-                {
-                    Console.WriteLine("User {0} not found", username);
-                }
-                else
-                {
-                    Console.WriteLine("User {0} has found", user.Name);
-                }
-            }
-                Console.Read();
+            bool isEntry = ad.searchUser("arhon");
+            if (isEntry)
+                Console.WriteLine("Is entry");
+            Console.Read();
         }
     }
     //ActiveDirectory
     class AD
     {
-        
-        DirectoryEntry CurrentDomain;
-        //DirectoryEntries Trees;
-        //IEnumerator Reed;
+        string currentDomain;
+        string username;
+        string password;
+        ContextType type;
 
-        public AD(string path, string username, string password)
+        // Для работы с Active Directory
+        public AD(string user, string pass, string domain)
         {
-            this.CurrentDomain = new DirectoryEntry(path, username, password);
+            this.currentDomain = domain;
+            this.type = ContextType.Domain;
+            this.username = user;
+            this.password = pass;
         }
+
+        // Для работы с local users
         public AD()
         {
-            this.CurrentDomain = new DirectoryEntry();
+            this.currentDomain = Environment.MachineName;
+            this.type = ContextType.Machine;
+            this.username = null;
+            this.password = null;
         }
-        public bool searchUser(string ADUsername, string ADGroup = "SAMAccountName")
+        //поиск пользователя в домене AD
+        public bool searchUser(string ADUsername)
         {
             try
             {
-                using (PrincipalContext contex = new PrincipalContext(ContextType.Domain))
+                using (PrincipalContext contex = new PrincipalContext(
+                    this.type,
+                    this.currentDomain,
+                    this.username,
+                    this.password)
+                    )
                 {
-                    UserPrincipal user = UserPrincipal.FindByIdentity(contex, ADUsername);
+                    UserPrincipal user = UserPrincipal.FindByIdentity(
+                        contex, 
+                        IdentityType.SamAccountName, 
+                        ADUsername
+                        );
                     return true;
                 }
             }
@@ -67,10 +71,10 @@ namespace WorkWithAD
             }
             return false;
         }
+
         ~AD()
         {
             Console.WriteLine("Destroy CurrentDomain");
-            CurrentDomain.Close();
         }
     }
 }
