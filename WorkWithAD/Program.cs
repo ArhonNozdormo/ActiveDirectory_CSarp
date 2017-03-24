@@ -12,6 +12,17 @@ namespace WorkWithAD
     {
         static void Main(string[] args)
         {
+            AD ad = new AD();
+            var result = ad.searchUser("admin");
+            if(result == null)
+            {
+                Console.WriteLine("Result is null");
+            }
+            else
+            {
+                Console.WriteLine(result.ToString());
+            }
+            Console.Read();
         }
     }
     //ActiveDirectory
@@ -47,10 +58,11 @@ namespace WorkWithAD
             {
                 Console.WriteLine(e.Message);
             }
-            return 0;
+            return null;
         }
         ~AD()
         {
+            Console.WriteLine("Destroy CurrentDomain");
             CurrentDomain.Close();
         }
     }
