@@ -12,39 +12,38 @@ namespace WorkWithAD
     {
         static void Main(string[] args)
         {
-            try
-            {
-                DirectoryEntry CurrentDomain = new DirectoryEntry();
-                Console.WriteLine(CurrentDomain.Name);
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e.Message);
-            }
-            finally
-            {
-                Console.ReadKey();
-            }
         }
     }
     //ActiveDirectory
     class AD
     {
+        
         DirectoryEntry CurrentDomain;
-        DirectoryEntries Tree;
-        IEnumerator Reed;
+        //DirectoryEntries Trees;
+        //IEnumerator Reed;
 
         public AD(string path, string username, string password)
         {
             this.CurrentDomain = new DirectoryEntry(path, username, password);
-            this.Tree = CurrentDomain.Children;
-            this.Reed = Tree.GetEnumerator();
         }
         public AD()
         {
             this.CurrentDomain = new DirectoryEntry();
-            this.Tree = CurrentDomain.Children;
-            this.Reed = Tree.GetEnumerator();
+        }
+        public object searchUser (string ADUsername,string ADGroup)
+        {
+            SearchResult result;
+            using (DirectorySearcher searcher = new DirectorySearcher(CurrentDomain))
+            {
+                searcher.Filter = String.Format("({0}={1})", ADGroup, ADUsername);
+                searcher.PropertiesToLoad.Add("cn");
+                result = searcher.FindOne();
+            }
+            return result;
+        }
+        ~AD()
+        {
+            CurrentDomain.Close();
         }
     }
 }
